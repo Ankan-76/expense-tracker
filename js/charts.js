@@ -23,6 +23,8 @@ class ChartEngine {
   updateCategoryChart(transactions) {
     const ctx = document.getElementById('categoryChart').getContext('2d');
     const legendEl = document.getElementById('categoryChartLegend');
+    const currency = StorageManager.getSettings().currency;
+    const locale = currency === 'INR' ? 'en-IN' : 'en-US';
 
     // Filter expenses only
     const expenses = transactions.filter(t => t.type === 'expense');
@@ -70,7 +72,7 @@ class ChartEngine {
             borderWidth: 1,
             padding: 10,
             callbacks: {
-              label: (ctx) => ` $${ctx.raw.toLocaleString(undefined, { minimumFractionDigits: 2 })}`
+              label: (ctx) => ` ${new Intl.NumberFormat(locale, { style: 'currency', currency: currency }).format(ctx.raw)}`
             }
           }
         },
@@ -92,6 +94,9 @@ class ChartEngine {
    */
   updateTrendChart(transactions) {
     const ctx = document.getElementById('trendChart').getContext('2d');
+    const currency = StorageManager.getSettings().currency;
+    const locale = currency === 'INR' ? 'en-IN' : 'en-US';
+    const symbol = currency === 'INR' ? '₹' : '$';
 
     // Aggregate by Month-Year (last 6 months chronological)
     const monthMap = {};
@@ -160,7 +165,7 @@ class ChartEngine {
             borderWidth: 1,
             padding: 10,
             callbacks: {
-              label: (ctx) => ` ${ctx.dataset.label}: $${ctx.raw.toLocaleString(undefined, { minimumFractionDigits: 2 })}`
+              label: (ctx) => ` ${ctx.dataset.label}: ${new Intl.NumberFormat(locale, { style: 'currency', currency: currency }).format(ctx.raw)}`
             }
           }
         },
@@ -174,7 +179,7 @@ class ChartEngine {
             ticks: {
               color: '#94A3B8',
               font: { size: 10 },
-              callback: (val) => '$' + val
+              callback: (val) => symbol + Intl.NumberFormat('en-US', { notation: 'compact' }).format(val)
             }
           }
         }
