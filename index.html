@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="en" class="dark scroll-smooth">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- SEO & Social Graph Meta Tags -->
+  <title>SpendPulse &mdash; Minimalist Financial Intelligence & Expense Tracker</title>
+  <meta name="description"
+    content="A client-side luxury dark-mode personal finance dashboard. Track income, monitor expenses, visualize analytics, and export CSV/JSON backups." />
+  <meta name="keywords"
+    content="expense tracker, personal finance, budget tracker, tailwindcss, vanilla js, chartjs, github pages" />
+  <meta name="author" content="SpendPulse" />
+  <meta name="theme-color" content="#0B0F17" />
+
+  <meta property="og:title" content="SpendPulse — Expense & Budget Tracking" />
+  <meta property="og:description"
+    content="Gain financial clarity with real-time analytics and category distribution charts." />
+  <meta property="og:type" content="website" />
+  <meta property="og:image" content="./assets/favicon.svg" />
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="./assets/favicon.svg" />
+
+  <!-- Google Fonts: Plus Jakarta Sans -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap"
+    rel="stylesheet" />
+
+  <!-- Tailwind CSS Play CDN with Dark Mode Config -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+          },
+          colors: {
+            fin: {
+              bg: '#0B0F17',
+              surface: '#111827',
+              emerald: '#10B981',
+              rose: '#F43F5E',
+              violet: '#8B5CF6',
+              cyan: '#06B6D4',
+            }
+          }
+        }
+      }
+    };
+  </script>
+
+  <!-- External Library CDNs: Chart.js, Lucide Icons, Canvas Confetti -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+
+  <!-- Custom Stylesheet -->
+  <link rel="stylesheet" href="./css/custom.css" />
+</head>
+
+<body
+  class="bg-slate-50 dark:bg-[#0B0F17] text-slate-800 dark:text-slate-100 min-h-screen flex flex-col antialiased selection:bg-violet-500 selection:text-white transition-colors duration-300">
+
+  <!-- ================= Application Header ================= -->
+  <header class="sticky top-0 z-30 glass-panel border-b border-white/10 px-4 lg:px-8 py-3.5 transition-all">
+    <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-4">
+
+      <!-- Brand Logo -->
+      <div class="flex items-center gap-3">
+        <div
+          class="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-500 via-cyan-500 to-violet-600 flex items-center justify-center shadow-lg shadow-cyan-500/20">
+          <i data-lucide="wallet-cards" class="w-5 h-5 text-white"></i>
+        </div>
+        <div>
+          <span
+            class="text-lg font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-slate-800 via-slate-600 to-slate-900 dark:from-white dark:via-slate-200 dark:to-slate-400 transition-colors">SpendPulse</span>
+          <span
+            class="hidden sm:inline-block ml-1.5 px-1.5 py-0.5 text-[10px] font-semibold tracking-wider uppercase rounded bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-500/30 transition-colors">Analytics</span>
+        </div>
+      </div>
+
+      <!-- Live Search Bar -->
+      <div class="w-full order-last mt-2 md:mt-0 md:w-auto md:flex-1 md:order-none md:max-w-md">
+        <div class="relative flex items-center">
+          <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3.5 pointer-events-none"></i>
+          <input type="search" id="searchInput" placeholder="Search merchant, category, notes... (Press /)"
+            class="w-full glass-input text-xs sm:text-sm rounded-xl pl-10 pr-10 py-2 text-slate-800 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none transition-colors"
+            autocomplete="off" />
+          <kbd
+            class="absolute right-3 hidden lg:inline-flex items-center px-1.5 py-0.5 text-[10px] font-mono text-slate-500 dark:text-slate-400 bg-slate-200 dark:bg-slate-800 rounded border border-slate-300 dark:border-slate-700 transition-colors">/</kbd>
+        </div>
+      </div>
+
+      <!-- Action Cluster -->
+      <div class="flex items-center gap-2 sm:gap-3">
+        <!-- Settings Trigger -->
+        <button id="openSettingsBtn" type="button" title="Settings"
+          class="p-2 sm:px-3 sm:py-2 rounded-xl text-slate-400 hover:text-slate-800 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-white/5 border border-slate-300 dark:border-white/5 transition flex items-center gap-1.5 text-xs font-medium">
+          <i data-lucide="settings" class="w-4 h-4 hover:rotate-90 transition-transform duration-300"></i>
+        </button>
+
+        <!-- Portability Dropdown Trigger -->
+        <button id="openBackupModalBtn" type="button" title="Data Backup & Sync"
+          class="p-2 sm:px-3 sm:py-2 rounded-xl text-slate-400 hover:text-slate-800 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-white/5 border border-slate-300 dark:border-white/5 transition flex items-center gap-1.5 text-xs font-medium">
+          <i data-lucide="database" class="w-4 h-4"></i>
+          <span class="hidden sm:inline">Portability</span>
+        </button>
+
+        <!-- New Transaction CTA -->
+        <button id="openAddModalBtn" type="button"
+          class="relative group overflow-hidden px-3.5 sm:px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 text-white font-semibold text-xs sm:text-sm shadow-lg shadow-emerald-600/30 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center gap-1.5 sm:gap-2">
+          <i data-lucide="plus-circle" class="w-4 h-4 group-hover:rotate-90 transition-transform duration-300"></i>
+          <span>Record Entry</span>
+        </button>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- ================= Main Dashboard Shell ================= -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 lg:px-8 py-6 space-y-6">
+
+    <!-- KPI Summary Cards Row -->
+    <section aria-labelledby="kpiHeading" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <h2 id="kpiHeading" class="sr-only">Financial Summary Cards</h2>
+
+      <!-- Total Balance Card -->
+      <article class="glass-card rounded-2xl p-5 relative overflow-hidden">
+        <div
+          class="flex items-center justify-between text-slate-500 dark:text-slate-400 text-xs font-medium mb-1 transition-colors">
+          <span>Net Balance</span>
+          <div
+            class="p-1.5 rounded-lg bg-violet-100 dark:bg-violet-500/20 text-violet-600 dark:text-violet-400 border border-violet-200 dark:border-violet-500/30 transition-colors">
+            <i data-lucide="scale" class="w-4 h-4"></i>
+          </div>
+        </div>
+        <div
+          class="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white mt-2 transition-colors"
+          id="kpiNetBalance">$0.00</div>
+        <div class="flex items-center gap-1 text-[11px] text-slate-500 dark:text-slate-400 mt-2 transition-colors">
+          <span>All-time accumulated wealth</span>
+        </div>
+      </article>
+
+      <!-- Monthly Income Card -->
+      <article class="glass-card rounded-2xl p-5 relative overflow-hidden">
+        <div
+          class="flex items-center justify-between text-slate-500 dark:text-slate-400 text-xs font-medium mb-1 transition-colors">
+          <span>Monthly Income</span>
+          <div
+            class="p-1.5 rounded-lg bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/30 transition-colors">
+            <i data-lucide="trending-up" class="w-4 h-4"></i>
+          </div>
+        </div>
+        <div
+          class="text-2xl sm:text-3xl font-extrabold tracking-tight text-emerald-600 dark:text-emerald-400 mt-2 transition-colors"
+          id="kpiMonthlyIncome">
+          $0.00</div>
+        <div class="flex items-center gap-1 text-[11px] text-slate-500 dark:text-slate-400 mt-2 transition-colors">
+          <span id="incomeCountText">0 deposits logged</span>
+        </div>
+      </article>
+
+      <!-- Monthly Expenses Card -->
+      <article class="glass-card rounded-2xl p-5 relative overflow-hidden">
+        <div
+          class="flex items-center justify-between text-slate-500 dark:text-slate-400 text-xs font-medium mb-1 transition-colors">
+          <span>Monthly Expenses</span>
+          <div
+            class="p-1.5 rounded-lg bg-rose-100 dark:bg-rose-500/20 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-500/30 transition-colors">
+            <i data-lucide="trending-down" class="w-4 h-4"></i>
+          </div>
+        </div>
+        <div
+          class="text-2xl sm:text-3xl font-extrabold tracking-tight text-rose-600 dark:text-rose-400 mt-2 transition-colors"
+          id="kpiMonthlyExpense">$0.00
+        </div>
+        <div class="flex items-center gap-1 text-[11px] text-slate-500 dark:text-slate-400 mt-2 transition-colors">
+          <span id="expenseCountText">0 expenses logged</span>
+        </div>
+      </article>
+
+      <!-- Savings Rate & Budget Health Card -->
+      <article class="glass-card rounded-2xl p-5 relative overflow-hidden">
+        <div
+          class="flex items-center justify-between text-slate-500 dark:text-slate-400 text-xs font-medium mb-1 transition-colors">
+          <span>Savings Rate</span>
+          <div
+            class="p-1.5 rounded-lg bg-cyan-100 dark:bg-cyan-500/20 text-cyan-600 dark:text-cyan-400 border border-cyan-200 dark:border-cyan-500/30 transition-colors">
+            <i data-lucide="pie-chart" class="w-4 h-4"></i>
+          </div>
+        </div>
+        <div
+          class="text-2xl sm:text-3xl font-extrabold tracking-tight text-cyan-600 dark:text-cyan-300 mt-2 transition-colors"
+          id="kpiSavingsRate">0%</div>
+        <!-- Progress Bar Indicator -->
+        <div class="w-full h-1.5 bg-slate-200 dark:bg-slate-800 rounded-full mt-3 overflow-hidden transition-colors">
+          <div id="savingsProgressBar"
+            class="h-full bg-gradient-to-r from-cyan-500 to-emerald-400 rounded-full transition-all duration-500"
+            style="width: 0%"></div>
+        </div>
+      </article>
+
+    </section>
+
+    <!-- Visual Analytics & Charts Section -->
+    <section aria-labelledby="analyticsHeading" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <h2 id="analyticsHeading" class="sr-only">Financial Analytics & Charts</h2>
+
+      <!-- Category Distribution Doughnut Chart (1 col) -->
+      <div class="glass-panel rounded-3xl p-5 sm:p-6 flex flex-col justify-between">
+        <div class="flex items-center justify-between mb-4">
+          <div>
+            <h3
+              class="text-sm font-bold text-slate-900 dark:text-white tracking-tight flex items-center gap-2 transition-colors">
+              <i data-lucide="donut" class="w-4 h-4 text-violet-600 dark:text-violet-400 transition-colors"></i>
+              Category Breakdown
+            </h3>
+            <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 transition-colors">Where your capital flows
+            </p>
+          </div>
+          <span id="donutPeriodBadge"
+            class="text-[10px] font-semibold uppercase px-2 py-0.5 rounded-md bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-white/5 transition-colors">This
+            Month</span>
+        </div>
+        <div class="relative w-full aspect-square max-h-[250px] mx-auto flex items-center justify-center">
+          <canvas id="categoryChart"></canvas>
+        </div>
+        <div id="categoryChartLegend"
+          class="flex flex-wrap gap-2 justify-center mt-4 text-[11px] text-slate-600 dark:text-slate-400 max-h-20 overflow-y-auto transition-colors">
+          <!-- Injected via charts.js -->
+        </div>
+      </div>
+
+      <!-- Monthly Trends Comparison Bar/Line Chart (2 cols) -->
+      <div class="glass-panel rounded-3xl p-5 sm:p-6 lg:col-span-2 flex flex-col justify-between">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+          <div>
+            <h3
+              class="text-sm font-bold text-slate-900 dark:text-white tracking-tight flex items-center gap-2 transition-colors">
+              <i data-lucide="bar-chart-3" class="w-4 h-4 text-emerald-600 dark:text-emerald-400 transition-colors"></i>
+              Income vs. Expense Trend
+            </h3>
+            <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 transition-colors">Monthly financial
+              velocity over time</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <span
+              class="inline-flex items-center gap-1 text-[11px] text-emerald-400 font-semibold px-2 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/20">
+              <span class="w-2 h-2 rounded-full bg-emerald-400"></span> Income
+            </span>
+            <span
+              class="inline-flex items-center gap-1 text-[11px] text-rose-400 font-semibold px-2 py-0.5 rounded bg-rose-500/10 border border-rose-500/20">
+              <span class="w-2 h-2 rounded-full bg-rose-400"></span> Expenses
+            </span>
+          </div>
+        </div>
+        <div class="relative w-full h-[250px]">
+          <canvas id="trendChart"></canvas>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- Filtering, Searching & Transactions Section -->
+    <section class="glass-panel rounded-3xl p-5 sm:p-6 space-y-4">
+
+      <!-- Toolbar Header -->
+      <div
+        class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-2 border-b border-slate-200 dark:border-white/5 transition-colors">
+        <div>
+          <h2
+            class="text-base font-bold text-slate-900 dark:text-white tracking-tight flex items-center gap-2 transition-colors">
+            <i data-lucide="arrow-left-right" class="w-4 h-4 text-cyan-600 dark:text-cyan-400 transition-colors"></i>
+            Transactions Ledger
+          </h2>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5 transition-colors">Filter, sort, inspect, and
+            manage historical financial records.</p>
+        </div>
+
+        <!-- Filter Controls Cluster -->
+        <div class="flex flex-wrap items-center gap-2.5">
+
+          <!-- Period Selector -->
+          <div class="relative">
+            <select id="periodFilter"
+              class="appearance-none glass-input text-xs font-medium rounded-xl pl-3 pr-8 py-2 text-slate-800 dark:text-slate-300 focus:outline-none cursor-pointer transition-colors">
+              <option value="this_month">This Month</option>
+              <option value="last_month">Last Month</option>
+              <option value="all_time" selected>All Time</option>
+            </select>
+            <i data-lucide="chevron-down"
+              class="w-3.5 h-3.5 text-slate-500 dark:text-slate-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none transition-colors"></i>
+          </div>
+
+          <!-- Type Selector -->
+          <div class="relative">
+            <select id="typeFilter"
+              class="appearance-none glass-input text-xs font-medium rounded-xl pl-3 pr-8 py-2 text-slate-800 dark:text-slate-300 focus:outline-none cursor-pointer transition-colors">
+              <option value="ALL">All Types</option>
+              <option value="income">Income Only</option>
+              <option value="expense">Expense Only</option>
+            </select>
+            <i data-lucide="chevron-down"
+              class="w-3.5 h-3.5 text-slate-500 dark:text-slate-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none transition-colors"></i>
+          </div>
+
+          <!-- Category Selector -->
+          <div class="relative">
+            <select id="categoryFilter"
+              class="appearance-none glass-input text-xs font-medium rounded-xl pl-3 pr-8 py-2 text-slate-800 dark:text-slate-300 focus:outline-none cursor-pointer transition-colors">
+              <option value="ALL">All Categories</option>
+              <!-- Populated dynamically via UI.js -->
+            </select>
+            <i data-lucide="chevron-down"
+              class="w-3.5 h-3.5 text-slate-500 dark:text-slate-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none transition-colors"></i>
+          </div>
+
+          <!-- Sort Selector -->
+          <div class="relative">
+            <select id="sortFilter"
+              class="appearance-none glass-input text-xs font-medium rounded-xl pl-3 pr-8 py-2 text-slate-800 dark:text-slate-300 focus:outline-none cursor-pointer transition-colors">
+              <option value="date_desc">Date (Newest)</option>
+              <option value="date_asc">Date (Oldest)</option>
+              <option value="amount_desc">Amount (Highest)</option>
+              <option value="amount_asc">Amount (Lowest)</option>
+            </select>
+            <i data-lucide="arrow-down-up"
+              class="w-3.5 h-3.5 text-slate-500 dark:text-slate-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none transition-colors"></i>
+          </div>
+
+          <!-- Export CSV CTA -->
+          <button id="exportCsvBtn" type="button"
+            class="p-2 rounded-xl bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white border border-slate-300 dark:border-white/5 text-xs font-semibold flex items-center gap-1.5 transition-colors"
+            title="Export Ledger as CSV">
+            <i data-lucide="file-spreadsheet"
+              class="w-4 h-4 text-emerald-600 dark:text-emerald-400 transition-colors"></i>
+            <span class="hidden xl:inline">Export CSV</span>
+          </button>
+
+        </div>
+      </div>
+
+      <!-- Ledger Table -->
+      <div class="table-responsive-container">
+        <table class="w-full text-left border-collapse text-xs sm:text-sm">
+          <thead>
+            <tr
+              class="border-b border-slate-200 dark:border-white/10 text-slate-500 dark:text-slate-400 text-[11px] uppercase tracking-wider font-semibold transition-colors">
+              <th scope="col" class="py-3 px-3">Transaction</th>
+              <th scope="col" class="py-3 px-3">Category</th>
+              <th scope="col" class="py-3 px-3">Date</th>
+              <th scope="col" class="py-3 px-3 text-right">Amount</th>
+              <th scope="col" class="py-3 px-3 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="transactionTableBody" class="divide-y divide-slate-200 dark:divide-white/5 transition-colors">
+            <!-- Rendered dynamically via js/ui.js -->
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Empty State Container -->
+      <div id="tableEmptyState" class="hidden py-12 text-center flex-col items-center justify-center">
+        <div
+          class="w-14 h-14 rounded-2xl bg-slate-200 dark:bg-white/5 border border-slate-300 dark:border-white/10 flex items-center justify-center text-slate-500 dark:text-slate-400 mb-3 mx-auto transition-colors">
+          <i data-lucide="receipt" class="w-7 h-7 stroke-[1.5]"></i>
+        </div>
+        <p class="text-sm font-semibold text-slate-800 dark:text-slate-200 transition-colors">No transactions found</p>
+        <p class="text-xs text-slate-600 dark:text-slate-500 mt-1 transition-colors">Try adjusting your filters or
+          record a new financial entry.</p>
+      </div>
+
+    </section>
+
+    <!-- ================= App Footer ================= -->
+    <footer
+      class="mt-6 pt-6 mb-4 border-t border-slate-200 dark:border-white/10 text-center text-xs text-slate-500 dark:text-slate-400 transition-colors flex flex-col sm:flex-row items-center justify-between gap-3">
+      <p>&copy; 2026 SpendPulse. All rights reserved.</p>
+      <p>
+        Developed by
+        <a href="https://ankan-76.github.io/portfolio/" target="_blank" rel="noopener noreferrer"
+          class="font-semibold text-cyan-600 dark:text-cyan-400 hover:text-cyan-800 dark:hover:text-cyan-300 transition-colors">
+          Ankan Biswas
+        </a>
+      </p>
+    </footer>
+
+  </main>
+
+  <!-- ================= Transaction Add / Edit Native Dialog ================= -->
+  <dialog id="transactionModal" class="bg-transparent p-0 m-auto max-w-lg w-[92vw] focus:outline-none">
+    <div
+      class="glass-panel text-slate-900 border border-slate-200 dark:border-white/15 rounded-3xl p-6 sm:p-8 shadow-2xl shadow-black/10 dark:shadow-black/90 animate-scale-in dark:text-slate-100 transition-colors bg-white dark:bg-transparent">
+
+      <div
+        class="flex items-center justify-between pb-4 border-b border-slate-200 dark:border-white/10 transition-colors">
+        <div class="flex items-center gap-2.5">
+          <div
+            class="p-2 rounded-xl bg-cyan-100 dark:bg-cyan-500/20 text-cyan-600 dark:text-cyan-400 border border-cyan-200 dark:border-cyan-500/30 transition-colors">
+            <i data-lucide="coins" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <h2 id="modalTitle" class="text-base sm:text-lg font-bold text-slate-900 dark:text-white transition-colors">
+              Record Transaction</h2>
+            <p class="text-xs text-slate-500 dark:text-slate-400 transition-colors">Fill in the monetary details below.
+            </p>
+          </div>
+        </div>
+        <button id="closeModalBtn" type="button"
+          class="p-1.5 rounded-lg text-slate-500 hover:text-slate-900 hover:bg-slate-200 dark:text-slate-400 dark:hover:text-white dark:hover:bg-white/5 transition">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <form id="transactionForm" class="mt-5 space-y-4">
+        <input type="hidden" id="transId" value="" />
+
+        <!-- Transaction Type Switcher -->
+        <div>
+          <label
+            class="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1.5 transition-colors">Type
+            <span class="text-rose-500 dark:text-rose-400">*</span></label>
+          <div
+            class="grid grid-cols-2 gap-2 bg-slate-100 dark:bg-slate-900/80 p-1 rounded-xl border border-slate-200 dark:border-white/5 transition-colors">
+            <button type="button" id="typeExpenseBtn"
+              class="py-2 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 bg-rose-500 text-white shadow-lg shadow-rose-500/20">
+              <i data-lucide="arrow-down-right" class="w-4 h-4"></i> Expense
+            </button>
+            <button type="button" id="typeIncomeBtn"
+              class="py-2 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white">
+              <i data-lucide="arrow-up-right" class="w-4 h-4"></i> Income
+            </button>
+          </div>
+          <input type="hidden" id="transType" value="expense" />
+        </div>
+
+        <!-- Title / Merchant -->
+        <div>
+          <label for="transTitle"
+            class="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1.5 transition-colors">Title
+            / Merchant <span class="text-rose-500 dark:text-rose-400">*</span></label>
+          <input type="text" id="transTitle" required placeholder="e.g., Apple Store, Monthly Rent, Client Retainer"
+            class="w-full glass-input rounded-xl px-4 py-2.5 text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none transition-colors border border-slate-300 dark:border-transparent bg-white dark:bg-transparent" />
+        </div>
+
+        <!-- Amount and Date Row -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label for="transAmount"
+              class="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1.5 transition-colors">Amount
+              <span class="text-rose-500 dark:text-rose-400">*</span></label>
+            <input type="number" id="transAmount" step="0.01" min="0.01" required placeholder="0.00"
+              class="w-full glass-input rounded-xl px-4 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none transition-colors border border-slate-300 dark:border-transparent bg-white dark:bg-transparent" />
+          </div>
+
+          <div>
+            <label for="transDate"
+              class="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1.5 transition-colors">Date
+              <span class="text-rose-500 dark:text-rose-400">*</span></label>
+            <input type="date" id="transDate" required
+              class="w-full glass-input rounded-xl px-4 py-2 text-sm text-slate-900 dark:text-white focus:outline-none transition-colors border border-slate-300 dark:border-transparent bg-white dark:bg-transparent" />
+          </div>
+        </div>
+
+        <!-- Category & Custom input -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label for="transCategorySelect"
+              class="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1.5 transition-colors">Category
+              Preset</label>
+            <select id="transCategorySelect"
+              class="w-full glass-input rounded-xl px-3 py-2 text-xs font-medium text-slate-800 dark:text-slate-200 transition-colors border border-slate-300 dark:border-transparent bg-white dark:bg-transparent">
+              <option value="Food & Dining">🍔 Food & Dining</option>
+              <option value="Housing & Rent">🏠 Housing & Rent</option>
+              <option value="Tech & Tools">💻 Tech & Tools</option>
+              <option value="Transportation">🚗 Transportation</option>
+              <option value="Entertainment">🎬 Entertainment</option>
+              <option value="Health & Medical">🏥 Health & Medical</option>
+              <option value="Salary & Retainer">💼 Salary & Retainer</option>
+              <option value="Investments">📈 Investments</option>
+              <option value="Custom">✨ Custom Name...</option>
+            </select>
+          </div>
+
+          <div>
+            <label for="transCategoryCustom"
+              class="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1.5 transition-colors">Specific
+              Tag</label>
+            <input type="text" id="transCategoryCustom" placeholder="e.g., Subscriptions"
+              class="w-full glass-input rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none transition-colors border border-slate-300 dark:border-transparent bg-white dark:bg-transparent" />
+          </div>
+        </div>
+
+        <!-- Notes -->
+        <div>
+          <label for="transNotes"
+            class="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1.5 transition-colors">Notes
+            (Optional)</label>
+          <textarea id="transNotes" rows="2" placeholder="Invoice ID, memo or project code..."
+            class="w-full glass-input rounded-xl px-4 py-2 text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none resize-none transition-colors border border-slate-300 dark:border-transparent bg-white dark:bg-transparent"></textarea>
+        </div>
+
+        <!-- Form Actions -->
+        <div
+          class="pt-3 border-t border-slate-200 dark:border-white/10 flex items-center justify-end gap-3 transition-colors">
+          <button type="button" id="cancelModalBtn"
+            class="px-4 py-2 rounded-xl text-slate-500 hover:text-slate-900 hover:bg-slate-200 dark:text-slate-400 dark:hover:text-white dark:hover:bg-white/5 text-xs font-semibold transition">
+            Cancel
+          </button>
+          <button type="submit"
+            class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-cyan-600 text-white font-semibold text-xs shadow-lg shadow-emerald-600/30 hover:scale-[1.02] active:scale-[0.98] transition">
+            Commit Entry
+          </button>
+        </div>
+
+      </form>
+    </div>
+  </dialog>
+
+  <!-- ================= Portability & Backup Modal ================= -->
+  <dialog id="backupModal" class="bg-transparent p-0 m-auto max-w-md w-[92vw] focus:outline-none">
+    <div
+      class="glass-panel text-slate-900 border border-slate-200 dark:border-white/15 rounded-3xl p-6 sm:p-7 shadow-2xl shadow-black/10 dark:shadow-black/90 animate-scale-in dark:text-slate-100 transition-colors bg-white dark:bg-transparent">
+      <div
+        class="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-white/10 transition-colors">
+        <h3 class="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2 transition-colors">
+          <i data-lucide="database" class="w-4 h-4 text-cyan-600 dark:text-cyan-400 transition-colors"></i>
+          Portability & Data Storage
+        </h3>
+        <button id="closeBackupModalBtn" type="button"
+          class="p-1 rounded-lg text-slate-500 hover:text-slate-900 hover:bg-slate-200 dark:text-slate-400 dark:hover:text-white dark:hover:bg-white/5 transition-colors">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+      <p class="text-xs text-slate-600 dark:text-slate-400 mt-2 mb-4 leading-relaxed transition-colors">
+        All financial records are stored securely inside your browser's isolated local storage. Export full backups or
+        restore previously archived JSON files.
+      </p>
+
+      <div class="space-y-3">
+        <button id="exportJsonBtn" type="button"
+          class="w-full px-4 py-2.5 rounded-xl bg-slate-200 hover:bg-slate-300 text-slate-900 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-white font-medium text-xs border border-slate-300 dark:border-white/10 flex items-center justify-center gap-2 transition-colors">
+          <i data-lucide="download" class="w-4 h-4 text-cyan-600 dark:text-cyan-400 transition-colors"></i>
+          Export Full Database (JSON)
+        </button>
+
+        <label
+          class="w-full px-4 py-2.5 rounded-xl bg-slate-200 hover:bg-slate-300 text-slate-900 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-white font-medium text-xs border border-slate-300 dark:border-white/10 flex items-center justify-center gap-2 transition-colors cursor-pointer">
+          <i data-lucide="upload" class="w-4 h-4 text-violet-600 dark:text-violet-400 transition-colors"></i>
+          <span>Import Database (JSON)</span>
+          <input type="file" id="importJsonInput" accept=".json" class="hidden" />
+        </label>
+      </div>
+    </div>
+  </dialog>
+
+  <!-- ================= Settings Sidebar Overlay ================= -->
+  <div id="settingsBackdrop"
+    class="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 opacity-0 pointer-events-none transition-opacity duration-300">
+  </div>
+  <aside id="settingsSidebar"
+    class="fixed top-0 right-0 h-full w-full max-w-sm bg-slate-50 dark:bg-[#0B0F17]/95 backdrop-blur-xl border-l border-slate-200 dark:border-white/10 z-50 translate-x-full transition-transform duration-300 shadow-2xl flex flex-col">
+    <!-- Header -->
+    <div class="flex items-center justify-between p-5 border-b border-slate-200 dark:border-white/10">
+      <h3 class="text-base font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
+        <i data-lucide="settings" class="w-4 h-4 text-cyan-500 dark:text-cyan-400"></i>
+        Preferences
+      </h3>
+      <button id="closeSettingsBtn" type="button"
+        class="p-1.5 rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-white/5 transition">
+        <i data-lucide="x" class="w-5 h-5"></i>
+      </button>
+    </div>
+
+    <!-- Scrollable Content -->
+    <div class="flex-1 overflow-y-auto p-5 space-y-6">
+
+      <!-- Theme Setting -->
+      <div>
+        <h4 class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-3">Theme</h4>
+        <div
+          class="flex items-center justify-between bg-white dark:bg-[#111827] border border-slate-200 dark:border-white/10 shadow-sm p-3 rounded-xl transition-colors">
+          <div class="flex items-center gap-3">
+            <div
+              class="p-2 rounded-lg bg-indigo-100 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 transition-colors">
+              <i data-lucide="moon" id="themeIcon" class="w-4 h-4"></i>
+            </div>
+            <div>
+              <p class="text-sm font-semibold text-slate-800 dark:text-slate-200 transition-colors" id="themeLabel">Dark
+                Mode</p>
+            </div>
+          </div>
+          <!-- Toggle Switch -->
+          <button id="themeToggleBtn" type="button"
+            class="w-11 h-6 rounded-full bg-slate-300 dark:bg-cyan-500 relative transition-colors focus:outline-none focus:ring-2 focus:ring-cyan-500">
+            <span id="themeToggleKnob"
+              class="absolute left-1 top-1 w-4 h-4 rounded-full bg-white transition-transform duration-300 opacity-100 transform translate-x-0 dark:translate-x-5"></span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Currency Setting -->
+      <div>
+        <h4 class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-3">Currency</h4>
+        <div
+          class="flex items-center justify-between bg-white dark:bg-[#111827] border border-slate-200 dark:border-white/10 shadow-sm p-3 rounded-xl transition-colors">
+          <div class="flex items-center gap-3">
+            <div
+              class="p-2 rounded-lg bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 transition-colors">
+              <i data-lucide="coins" class="w-4 h-4"></i>
+            </div>
+            <div>
+              <p class="text-sm font-semibold text-slate-800 dark:text-slate-200 transition-colors">Display Currency</p>
+            </div>
+          </div>
+          <select id="currencySelect"
+            class="bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 text-sm rounded-lg px-2 py-1 outline-none border border-slate-200 dark:border-white/10 focus:border-cyan-500 transition-colors cursor-pointer">
+            <option value="USD">Dollar ($)</option>
+            <option value="INR">Rupee (₹)</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Data Management -->
+      <div>
+        <h4 class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-3">Data
+          Management</h4>
+        <div class="space-y-3">
+          <button id="viewTrashBtn" type="button"
+            class="w-full flex items-center justify-between p-3 rounded-xl bg-white dark:bg-[#111827] border border-slate-200 dark:border-white/10 shadow-sm hover:bg-slate-50 dark:hover:bg-white/5 transition-colors group">
+            <div class="flex items-center gap-3">
+              <div
+                class="p-2 rounded-lg bg-slate-100 dark:bg-slate-500/20 text-slate-600 dark:text-slate-400 group-hover:text-slate-800 dark:group-hover:text-white transition-colors">
+                <i data-lucide="trash-2" class="w-4 h-4"></i>
+              </div>
+              <span class="text-sm font-semibold text-slate-800 dark:text-slate-200 transition-colors">View Trash</span>
+            </div>
+            <i data-lucide="chevron-right"
+              class="w-4 h-4 text-slate-400 dark:text-slate-500 group-hover:text-cyan-500 dark:group-hover:text-cyan-400 transition-colors"></i>
+          </button>
+
+          <button id="clearDataSidebarBtn" type="button"
+            class="w-full flex items-center justify-between p-3 rounded-xl bg-rose-50 dark:bg-rose-500/10 border border-rose-200 dark:border-rose-500/20 hover:bg-rose-100 dark:hover:bg-rose-500/20 transition-colors group">
+            <div class="flex items-center gap-3">
+              <div
+                class="p-2 rounded-lg bg-rose-100 dark:bg-rose-500/20 text-rose-600 dark:text-rose-400 group-hover:text-rose-700 dark:group-hover:text-rose-300 transition-colors">
+                <i data-lucide="alert-triangle" class="w-4 h-4"></i>
+              </div>
+              <div class="text-left">
+                <p
+                  class="text-sm font-semibold text-rose-600 dark:text-rose-400 group-hover:text-rose-700 dark:group-hover:text-rose-300 transition-colors">
+                  Clear All Data</p>
+                <p class="text-[10px] text-rose-500 dark:text-rose-400/60 transition-colors">Moves to trash for 3 days
+                </p>
+              </div>
+            </div>
+          </button>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ================= Trash Modal / Drawer ================= -->
+  <dialog id="trashModal" class="bg-transparent p-0 m-auto max-w-lg w-[92vw] focus:outline-none">
+    <div
+      class="glass-panel bg-white/95 dark:bg-[#111827]/95 border border-slate-200 dark:border-white/15 rounded-3xl p-6 sm:p-7 shadow-2xl animate-scale-in text-slate-800 dark:text-slate-100 flex flex-col max-h-[80vh] transition-colors">
+      <div
+        class="flex items-center justify-between pb-4 border-b border-slate-200 dark:border-white/10 transition-colors">
+        <h3 class="text-base font-bold text-slate-800 dark:text-white flex items-center gap-2 transition-colors">
+          <i data-lucide="trash-2" class="w-5 h-5 text-slate-500 dark:text-slate-400"></i>
+          Trash (3-Day Retention)
+        </h3>
+        <button id="closeTrashModalBtn" type="button"
+          class="p-1 rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-white/5 transition-colors">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+      <div class="flex-1 overflow-y-auto py-4 space-y-3" id="trashListContainer">
+        <!-- Trash items injected here -->
+      </div>
+      <div class="pt-4 border-t border-slate-200 dark:border-white/10 flex justify-end transition-colors">
+        <button id="emptyTrashBtn" type="button"
+          class="px-4 py-2 rounded-xl bg-rose-50 dark:bg-rose-500/10 text-rose-600 dark:text-rose-400 hover:bg-rose-100 dark:hover:bg-rose-500 hover:text-rose-700 dark:hover:text-white dark:border dark:border-rose-500/20 text-xs font-semibold transition-colors">
+          Empty Trash Now
+        </button>
+      </div>
+    </div>
+  </dialog>
+
+  <!-- ================= Clear Data Confirm Modal ================= -->
+  <dialog id="clearConfirmModal" class="bg-transparent p-0 m-auto max-w-sm w-[92vw] focus:outline-none">
+    <div
+      class="glass-panel bg-white/95 dark:bg-[#111827]/95 border border-slate-200 dark:border-white/15 rounded-3xl p-6 shadow-2xl dark:shadow-rose-900/40 animate-scale-in text-center text-slate-800 dark:text-slate-100 transition-colors">
+      <div
+        class="w-14 h-14 rounded-full bg-rose-100 dark:bg-rose-500/20 text-rose-600 dark:text-rose-400 flex items-center justify-center mx-auto mb-4 border border-rose-200 dark:border-rose-500/30 transition-colors">
+        <i data-lucide="alert-circle" class="w-7 h-7"></i>
+      </div>
+      <h3 class="text-lg font-bold text-slate-800 dark:text-white mb-2 transition-colors">Clear All Records?</h3>
+      <p class="text-xs text-slate-500 dark:text-slate-400 mb-6 px-2 transition-colors">This will move all your
+        transactions to the Trash. You can restore them within 3 days.</p>
+
+      <div class="flex space-x-3">
+        <button id="cancelClearBtn" type="button"
+          class="flex-1 px-4 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-semibold text-xs border border-slate-200 dark:border-white/10 transition-colors">
+          Cancel
+        </button>
+        <button id="confirmClearBtn" type="button"
+          class="flex-1 px-4 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-semibold text-xs transition-colors shadow-lg shadow-rose-600/30">
+          Yes, Move to Trash
+        </button>
+      </div>
+    </div>
+  </dialog>
+
+  <!-- ================= Toast Notification Center ================= -->
+  <div id="toastContainer" class="fixed bottom-6 right-6 z-50 flex flex-col gap-2 pointer-events-none"
+    aria-live="assertive"></div>
+
+  <!-- Application Modules -->
+  <script src="./js/storage.js"></script>
+  <script src="./js/charts.js"></script>
+  <script src="./js/ui.js"></script>
+  <script src="./js/app.js"></script>
+</body>
+
+</html>
