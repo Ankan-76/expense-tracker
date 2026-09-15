@@ -8,11 +8,11 @@ class StorageManager {
 
   static getSettings() {
     const raw = localStorage.getItem(this.SETTINGS_KEY);
-    if (!raw) return { theme: 'dark', currency: 'USD' };
+    if (!raw) return { theme: 'dark', currency: 'INR' };
     try {
       return JSON.parse(raw);
     } catch {
-      return { theme: 'dark', currency: 'USD' };
+      return { theme: 'dark', currency: 'INR' };
     }
   }
 
