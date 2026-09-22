@@ -162,3 +162,41 @@ dialog::backdrop {
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
 }
+
+/* ==========================================================================
+   PWA & Mobile Standalone Optimizations
+   ========================================================================== */
+:root {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Safe Area Insets for Notch / Home Bar devices */
+header {
+  padding-top: max(0.625rem, env(safe-area-inset-top));
+  padding-left: max(0.875rem, env(safe-area-inset-left));
+  padding-right: max(0.875rem, env(safe-area-inset-right));
+}
+
+body {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* Standalone PWA Experience */
+@media (display-mode: standalone) {
+  body {
+    user-select: none;
+    -webkit-user-select: none;
+    overscroll-behavior-y: contain;
+  }
+
+  /* Allow text selection inside inputs and notes */
+  input, textarea, [contenteditable="true"] {
+    user-select: text;
+    -webkit-user-select: text;
+  }
+
+  /* Subtle standalone padding adjustment */
+  header {
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+  }
+}

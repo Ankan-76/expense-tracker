@@ -3,6 +3,7 @@
  */
 document.addEventListener('DOMContentLoaded', () => {
   const ui = new UIManager();
+  window.ui = ui;
   const charts = new ChartEngine();
 
   // Run Startup Checks

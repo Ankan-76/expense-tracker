@@ -3,14 +3,26 @@
 
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+
+  <!-- Progressive Web App (PWA) Manifest & Meta Tags -->
+  <link rel="manifest" href="./manifest.webmanifest" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="SpendPulse" />
+  <meta name="application-name" content="SpendPulse" />
+  <meta name="msapplication-TileColor" content="#0B0F17" />
+  <meta name="msapplication-TileImage" content="./assets/icons/icon-192.png" />
+  <link rel="apple-touch-icon" href="./assets/icons/apple-touch-icon.png" />
+  <link rel="apple-touch-icon" sizes="192x192" href="./assets/icons/icon-192.png" />
 
   <!-- SEO & Social Graph Meta Tags -->
   <title>SpendPulse &mdash; Minimalist Financial Intelligence & Expense Tracker</title>
   <meta name="description"
     content="A client-side luxury dark-mode personal finance dashboard. Track income, monitor expenses, visualize analytics, and export CSV/JSON backups." />
   <meta name="keywords"
-    content="expense tracker, personal finance, budget tracker, tailwindcss, vanilla js, chartjs, github pages" />
+    content="expense tracker, personal finance, budget tracker, tailwindcss, vanilla js, chartjs, github pages, pwa, offline finance" />
   <meta name="author" content="SpendPulse" />
   <meta name="theme-color" content="#0B0F17" />
 
@@ -22,6 +34,7 @@
 
   <!-- Favicon -->
   <link rel="icon" type="image/svg+xml" href="./assets/favicon.svg" />
+  <link rel="icon" type="image/png" sizes="192x192" href="./assets/icons/icon-192.png" />
 
   <!-- Google Fonts: Plus Jakarta Sans -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -67,53 +80,75 @@
   class="bg-slate-50 dark:bg-[#0B0F17] text-slate-800 dark:text-slate-100 min-h-screen flex flex-col antialiased selection:bg-violet-500 selection:text-white transition-colors duration-300">
 
   <!-- ================= Application Header ================= -->
-  <header class="sticky top-0 z-30 glass-panel border-b border-white/10 px-4 lg:px-8 py-3.5 transition-all">
-    <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-4">
+  <!-- ================= Application Header ================= -->
+  <header class="sticky top-0 z-30 glass-panel border-b border-white/10 px-3.5 sm:px-4 lg:px-8 py-2.5 sm:py-3.5 transition-all">
+    <div class="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center md:justify-between gap-2.5 md:gap-4">
 
-      <!-- Brand Logo -->
-      <div class="flex items-center gap-3">
-        <div
-          class="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-500 via-cyan-500 to-violet-600 flex items-center justify-center shadow-lg shadow-cyan-500/20">
-          <i data-lucide="wallet-cards" class="w-5 h-5 text-white"></i>
+      <!-- Mobile Row 1 / Desktop Groups: Brand & Utility Actions -->
+      <div class="flex items-center justify-between w-full md:w-auto md:contents">
+        <!-- Brand Logo -->
+        <div class="flex items-center gap-2.5 sm:gap-3 shrink-0 md:order-1">
+          <div
+            class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-tr from-emerald-500 via-cyan-500 to-violet-600 flex items-center justify-center shadow-lg shadow-cyan-500/20 shrink-0">
+            <i data-lucide="wallet-cards" class="w-4 h-4 sm:w-5 sm:h-5 text-white"></i>
+          </div>
+          <div class="flex items-center">
+            <span
+              class="text-base sm:text-lg font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-slate-800 via-slate-600 to-slate-900 dark:from-white dark:via-slate-200 dark:to-slate-400 transition-colors">SpendPulse</span>
+            <span
+              class="hidden sm:inline-block ml-1.5 px-1.5 py-0.5 text-[10px] font-semibold tracking-wider uppercase rounded bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-500/30 transition-colors">Analytics</span>
+          </div>
         </div>
-        <div>
-          <span
-            class="text-lg font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-slate-800 via-slate-600 to-slate-900 dark:from-white dark:via-slate-200 dark:to-slate-400 transition-colors">SpendPulse</span>
-          <span
-            class="hidden sm:inline-block ml-1.5 px-1.5 py-0.5 text-[10px] font-semibold tracking-wider uppercase rounded bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-500/30 transition-colors">Analytics</span>
+
+        <!-- Utility Cluster (Offline, Install, Portability, Settings) -->
+        <div class="flex items-center gap-1.5 sm:gap-2 shrink-0 md:order-3">
+          <!-- Offline Status Badge -->
+          <div id="offlineIndicator"
+            class="hidden items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-amber-500/10 border border-amber-500/25 text-amber-500 text-xs font-medium animate-pulse"
+            title="Offline Mode: Changes will be stored locally">
+            <i data-lucide="wifi-off" class="w-3.5 h-3.5"></i>
+            <span class="hidden sm:inline text-[11px] font-semibold">Offline</span>
+          </div>
+
+          <!-- PWA Install Button -->
+          <button id="installAppBtn" type="button" title="Install SpendPulse Application"
+            class="hidden p-2 sm:px-3 sm:py-2 rounded-xl text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 transition flex items-center gap-1.5 text-xs font-semibold shadow-sm animate-fade-in">
+            <i data-lucide="download" class="w-4 h-4"></i>
+            <span class="hidden sm:inline">Install</span>
+          </button>
+
+          <!-- Portability Dropdown Trigger -->
+          <button id="openBackupModalBtn" type="button" title="Data Backup & Sync"
+            class="p-2 sm:px-3 sm:py-2 rounded-xl text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-white/5 border border-slate-300 dark:border-white/5 transition flex items-center gap-1.5 text-xs font-medium">
+            <i data-lucide="database" class="w-4 h-4"></i>
+            <span class="hidden sm:inline">Portability</span>
+          </button>
+
+          <!-- Settings Trigger -->
+          <button id="openSettingsBtn" type="button" title="Settings"
+            class="p-2 sm:px-3 sm:py-2 rounded-xl text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-white/5 border border-slate-300 dark:border-white/5 transition flex items-center gap-1.5 text-xs font-medium">
+            <i data-lucide="settings" class="w-4 h-4 hover:rotate-90 transition-transform duration-300"></i>
+          </button>
         </div>
       </div>
 
-      <!-- Live Search Bar -->
-      <div class="w-full order-last mt-2 md:mt-0 md:w-auto md:flex-1 md:order-none md:max-w-md">
-        <div class="relative flex items-center">
-          <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3.5 pointer-events-none"></i>
-          <input type="search" id="searchInput" placeholder="Search merchant, category, notes... (Press /)"
-            class="w-full glass-input text-xs sm:text-sm rounded-xl pl-10 pr-10 py-2 text-slate-800 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none transition-colors"
-            autocomplete="off" />
-          <kbd
-            class="absolute right-3 hidden lg:inline-flex items-center px-1.5 py-0.5 text-[10px] font-mono text-slate-500 dark:text-slate-400 bg-slate-200 dark:bg-slate-800 rounded border border-slate-300 dark:border-slate-700 transition-colors">/</kbd>
+      <!-- Mobile Row 2 / Desktop Groups: Search Bar & Primary CTA -->
+      <div class="flex items-center gap-2 sm:gap-3 w-full md:w-auto md:contents">
+        <!-- Live Search Bar -->
+        <div class="flex-1 min-w-0 md:order-2 md:max-w-md md:mx-4">
+          <div class="relative flex items-center">
+            <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3 pointer-events-none"></i>
+            <input type="search" id="searchInput" placeholder="Search merchant, notes... (Press /)"
+              class="w-full glass-input text-xs sm:text-sm rounded-xl pl-9 sm:pl-10 pr-9 sm:pr-10 py-2 text-slate-800 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none transition-colors"
+              autocomplete="off" />
+            <kbd
+              class="absolute right-3 hidden lg:inline-flex items-center px-1.5 py-0.5 text-[10px] font-mono text-slate-500 dark:text-slate-400 bg-slate-200 dark:bg-slate-800 rounded border border-slate-300 dark:border-slate-700 transition-colors">/</kbd>
+          </div>
         </div>
-      </div>
-
-      <!-- Action Cluster -->
-      <div class="flex items-center gap-2 sm:gap-3">
-        <!-- Settings Trigger -->
-        <button id="openSettingsBtn" type="button" title="Settings"
-          class="p-2 sm:px-3 sm:py-2 rounded-xl text-slate-400 hover:text-slate-800 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-white/5 border border-slate-300 dark:border-white/5 transition flex items-center gap-1.5 text-xs font-medium">
-          <i data-lucide="settings" class="w-4 h-4 hover:rotate-90 transition-transform duration-300"></i>
-        </button>
-
-        <!-- Portability Dropdown Trigger -->
-        <button id="openBackupModalBtn" type="button" title="Data Backup & Sync"
-          class="p-2 sm:px-3 sm:py-2 rounded-xl text-slate-400 hover:text-slate-800 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-white/5 border border-slate-300 dark:border-white/5 transition flex items-center gap-1.5 text-xs font-medium">
-          <i data-lucide="database" class="w-4 h-4"></i>
-          <span class="hidden sm:inline">Portability</span>
-        </button>
 
         <!-- New Transaction CTA -->
         <button id="openAddModalBtn" type="button"
-          class="relative group overflow-hidden px-3.5 sm:px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 text-white font-semibold text-xs sm:text-sm shadow-lg shadow-emerald-600/30 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center gap-1.5 sm:gap-2">
+          class="shrink-0 md:order-4 relative group overflow-hidden px-3.5 sm:px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 text-white font-semibold text-xs sm:text-sm shadow-lg shadow-emerald-600/30 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center gap-1.5 sm:gap-2">
           <i data-lucide="plus-circle" class="w-4 h-4 group-hover:rotate-90 transition-transform duration-300"></i>
           <span>Record Entry</span>
         </button>
@@ -627,6 +662,26 @@
         </div>
       </div>
 
+      <!-- Application / PWA -->
+      <div>
+        <h4 class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-3">Application</h4>
+        <button id="sidebarInstallBtn" type="button"
+          class="w-full flex items-center justify-between p-3 rounded-xl bg-white dark:bg-[#111827] border border-slate-200 dark:border-white/10 shadow-sm hover:bg-slate-50 dark:hover:bg-white/5 transition-colors group">
+          <div class="flex items-center gap-3">
+            <div
+              class="p-2 rounded-lg bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 transition-colors">
+              <i data-lucide="download" class="w-4 h-4"></i>
+            </div>
+            <div class="text-left">
+              <p class="text-sm font-semibold text-slate-800 dark:text-slate-200 transition-colors">Install App</p>
+              <p class="text-[10px] text-slate-500 dark:text-slate-400 transition-colors">Install to device for offline access</p>
+            </div>
+          </div>
+          <i data-lucide="chevron-right"
+            class="w-4 h-4 text-slate-400 dark:text-slate-500 group-hover:text-emerald-500 dark:group-hover:text-emerald-400 transition-colors"></i>
+        </button>
+      </div>
+
       <!-- Data Management -->
       <div>
         <h4 class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-3">Data
@@ -718,6 +773,45 @@
     </div>
   </dialog>
 
+  <!-- ================= iOS Add to Home Screen Modal ================= -->
+  <dialog id="iosInstallModal" class="bg-transparent p-0 m-auto max-w-sm w-[92vw] focus:outline-none">
+    <div
+      class="glass-panel bg-white/95 dark:bg-[#111827]/95 border border-slate-200 dark:border-white/15 rounded-3xl p-6 shadow-2xl animate-scale-in text-slate-800 dark:text-slate-100 transition-colors">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-white/10 mb-4">
+        <div class="flex items-center gap-2.5">
+          <div class="w-8 h-8 rounded-xl bg-emerald-500/20 text-emerald-500 flex items-center justify-center">
+            <i data-lucide="smartphone" class="w-4 h-4"></i>
+          </div>
+          <h3 class="font-bold text-sm text-slate-900 dark:text-white">Install SpendPulse</h3>
+        </div>
+        <button id="closeIosModalBtn" type="button" class="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-white">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+      <p class="text-xs text-slate-500 dark:text-slate-400 mb-4">
+        Install SpendPulse on your iOS device for full-screen offline access:
+      </p>
+      <ol class="space-y-3 text-xs text-slate-700 dark:text-slate-300">
+        <li class="flex items-start gap-2.5">
+          <span class="w-5 h-5 rounded-full bg-slate-200 dark:bg-slate-800 text-slate-800 dark:text-slate-200 flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5">1</span>
+          <span>Tap the <strong>Share</strong> button <i data-lucide="share" class="inline w-3.5 h-3.5 text-cyan-500 mx-0.5"></i> in Safari toolbar.</span>
+        </li>
+        <li class="flex items-start gap-2.5">
+          <span class="w-5 h-5 rounded-full bg-slate-200 dark:bg-slate-800 text-slate-800 dark:text-slate-200 flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5">2</span>
+          <span>Scroll down and tap <strong>Add to Home Screen</strong> <i data-lucide="plus-square" class="inline w-3.5 h-3.5 text-emerald-500 mx-0.5"></i>.</span>
+        </li>
+        <li class="flex items-start gap-2.5">
+          <span class="w-5 h-5 rounded-full bg-slate-200 dark:bg-slate-800 text-slate-800 dark:text-slate-200 flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5">3</span>
+          <span>Tap <strong>Add</strong> in the top right corner.</span>
+        </li>
+      </ol>
+      <button onclick="document.getElementById('iosInstallModal').close()" type="button"
+        class="w-full mt-6 py-2.5 rounded-xl bg-violet-600 hover:bg-violet-500 text-white font-semibold text-xs transition shadow-lg shadow-violet-600/30">
+        Got it!
+      </button>
+    </div>
+  </dialog>
+
   <!-- ================= Toast Notification Center ================= -->
   <div id="toastContainer" class="fixed bottom-6 right-6 z-50 flex flex-col gap-2 pointer-events-none"
     aria-live="assertive"></div>
@@ -726,6 +820,7 @@
   <script src="./js/storage.js"></script>
   <script src="./js/charts.js"></script>
   <script src="./js/ui.js"></script>
+  <script src="./js/pwa.js"></script>
   <script src="./js/app.js"></script>
 </body>
 
